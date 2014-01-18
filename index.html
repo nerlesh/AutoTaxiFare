@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Distance between Two Places</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <link rel="stylesheet" href="jquery.mobile-1.4.0.min.css">
+	<link rel="shortcut icon" href="../favicon.ico">
+	<script src="jquery.js"></script>
+	<script src="jquery.mobile-1.4.0.min.js"></script>
+     <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAA7j_Q-rshuWkc8HyFI4V2HxQYPm-xtd00hTQOC0OXpAMO40FHAxT29dNBGfxqMPq5zwdeiDSHEPL89A" type="text/javascript"></script>
+     <script type="text/javascript">
+     
+     $( document ).on( "pagecreate", function() {
+			$( "#theme-selector input" ).on( "change", function( event ) {
+				var themeClass = $( "#theme-selector input:checked" ).attr( "id" );
+
+				$( "#testpage" ).removeClass( "ui-page-theme-a ui-page-theme-b" ).addClass( "ui-page-theme-" + themeClass );
+				$( "#ui-body-test" ).removeClass( "ui-body-a ui-body-b" ).addClass( "ui-body-" + themeClass );
+				$( "#ui-bar-test, #ui-bar-form" ).removeClass( "ui-bar-a ui-bar-b" ).addClass( "ui-bar-" + themeClass );
+				$( ".ui-collapsible-content" ).removeClass( "ui-body-a ui-body-b" ).addClass( "ui-body-" + themeClass );
+				$( ".theme" ).text( themeClass );
+			});
+			$( "#opt-shadow input" ).on( "change", function( event ) {
+				if ( $( "#on" ).prop( "checked" ) ) {
+					$( "#testpage" ).removeClass( "noshadow" );
+				} else if ( $( "#off" ).prop( "checked" ) ) {
+					$( "#testpage" ).addClass( "noshadow" );
+				}
+			});
+			$( "#opt-iconshadow input" ).on( "change", function( event ) {
+				if ( $( "#off1" ).prop( "checked" ) ) {
+					$( "#testpage" ).removeClass( "ui-shadow-icon" );
+				} else if ( $( "#on1" ).prop( "checked" ) ) {
+					$( "#testpage" ).addClass( "ui-shadow-icon" );
+				}
+			});
+			$( "#opt-navbars input" ).on( "change", function( event ) {
+				if ( $( "#show" ).prop( "checked" ) ) {
+					$( "#testpage .ui-navbar" ).show();
+					$( "#testpage .ui-footer h4" ).hide();
+				} else if ( $( "#hide" ).prop( "checked" ) ) {
+					$( "#testpage .ui-navbar" ).hide();
+					$( "#testpage .ui-footer h4" ).show();
+				}
+			});
+		});
+
+	 function calculateDistances() {
+	 
+  origin = document.forms[0].address1.value; //Get the source string
+  destination = document.forms[0].address2.value; //Get the destination string
+  if(origin==null || origin==''){
+  alert("Please Enter From Address");
+  return true;
+  }else if(destination==null || destination==''){
+   alert("Please Enter To Address");
+   return true;
+  }else if(origin==destination){
+  alert("From and To Cannot be Same");
+  return true;
+  }
+  var service = new google.maps.DistanceMatrixService(); //initialize the distance service
+  service.getDistanceMatrix(
+    {
+      origins: [origin], //set origin, you can specify multiple sources here
+      destinations: [destination],//set destination, you can specify multiple destinations here
+      travelMode: google.maps.TravelMode.DRIVING, //set the travelmode
+      unitSystem: google.maps.UnitSystem.METRIC,//The unit system to use when displaying distance
+      avoidHighways: false,
+      avoidTolls: false
+    }, calcDistance); // here calcDistance is the call back function
+}
+
+function calcDistance(response, status) {
+  if (status != google.maps.DistanceMatrixStatus.OK) { // check if there is valid result
+    alert('Error was: ' + status);
+  } else {
+    var origins = response.originAddresses;
+    var destinations = response.destinationAddresses;
+   var result ='';
+
+    for (var i = 0; i < origins.length; i++) {
+      var results = response.rows[i].elements;
+
+      for (var j = 0; j < results.length; j++) {
+
+       //alert ('Distance from '+origins[i] + ' to ' + destinations[j]
+         //   + ': ' + results[j].distance.text ); // alert the result
+			var dist= results[j].distance.text ;
+
+			dist = dist.replace('km','');
+			/*var totalDayFare ;
+			var totalnightFare;
+			if(parseFloat(dist.trim())==1.8){
+			alert("hai");
+			
+			}*/
+
+return parseFloat(dist.trim());
+
+			if(parseFloat(dist.trim())<=1.8){
+			dayCost = 25;
+			nightCost = ((parseFloat(dayCost) * 50)/100) + dayCost ;
+			nightCost=Math.round(nightCost);
+			}else if(parseFloat(dist.trim())>=100){
+			alert("Your Distance is too Far Please take Taxi");
+			}
+			else{
+			dist=(parseFloat(dist.trim())-1.8);
+			dist=Math.abs(dist);
+			//dist=Math.ceil(parseFloat(dist));
+			 dayCost = ( parseFloat(dist) * 12 ) + 25;
+			 nightCost = ((parseFloat(dayCost) * 50)/100) + dayCost ;
+			 	dayCost=Math.round(dayCost);
+			 		nightCost=Math.round(nightCost);
+			}
+			result +='<div><center><table id="Result"><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
+			result += '<tr><td>'+ dayCost + '</td>' + '<td>' + nightCost + '</td></tr>';
+			result+='</table></center></div>';
+			
+			
+			$('#resultFare').html(result);
+      }
+    }
+  }
+}
+	 
+	 
+    var geocoder, location1, location2;
+
+    function initialize() {
+        geocoder = new GClientGeocoder();
+    }
+
+   
+   function getDist(){
+   var dist = 9;
+   return dist;
+   }
+
+function calcDist(){
+var chosenPlace = document.getElementById("select-native-3");
+if(!calculateDistances()){
+return;
+}
+if(chosenPlace.value=='Chennai'){
+calcForChen();
+}else if (chosenPlace.value=='Hyderabad'){
+calcForHyd();
+}
+else if(chosenPlace.value=='Banglore'){
+calcForBglre();
+}
+}
+function calcForChen(){
+
+if(document.getElementById("radio-choice-1").checked){
+
+var dist =  calculateDistances();
+var farVal = new Array(); 
+var transName = new Array();
+		var dayCost ;
+			var nightCost;
+			if(dist<=1.8){
+			dayCost = 25;
+			nightCost = ((dayCost * 50)/100) + dayCost ;
+			nightCost=Math.round(nightCost);
+			}else if(dist>=100){
+			alert("Your Distance is too Far Please take Taxi");
+			}
+			else{
+			dist=(dist-1.8);
+			dist=Math.abs(dist);
+			//dist=Math.ceil(parseFloat(dist));
+			 dayCost = (dist * 12 ) + 25;
+			 nightCost = ((dayCost* 50)/100) + dayCost ;
+			 	dayCost=Math.round(dayCost);
+			 		nightCost=Math.round(nightCost);
+			}
+			farVal.push(dayCost);
+			farVal.push(nightCost);
+			transName.push('Auto Rickshaw');
+				
+//constructAutoFareChart(farVal,'Auto Rickshaw Fare Chart',transName);
+constructAutoFareChart(dayCost,nightCost);
+
+} else if(document.getElementById("radio-choice-2").checked){
+			var dist = calculateDistances();
+			var dayCost ;
+			var nightCost;
+			var vehicle = new Array();
+			var nightFare = new Array();
+			var vehicleName = new Array();
+			if(dist<=4){
+			vehicle.push('100');
+			nightFare.push(Math.round(100+(100*25/100)));
+			vehicle.push('100');
+			nightFare.push(Math.round(100+(100*25/100)));
+			vehicle.push('100');
+			nightFare.push(Math.round(100+(100*25/100)));
+			vehicle.push('100');
+			nightFare.push(Math.round(100+(100*25/100)));
+			vehicle.push('150');
+			nightFare.push(Math.round(150+(150*25/100)));
+			vehicle.push('150');
+			nightFare.push(Math.round(150+(150*25/100)));
+			}else {
+			dist = dist-4;
+			var omni = (dist * 16) + 100;
+			var indica = (dist * 18 ) +100;
+			var indigoLogon = (dist * 19)+100;
+			var etios = (dist * 19) +100;
+			var tavera = (dist * 22) + 100;
+			var innova = (dist * 22) +100 ;
+			vehicle.push(Math.round(omni));
+			nightFare.push(Math.round(omni+(omni*25/100)));
+			vehicle.push(Math.round(indica));
+			nightFare.push(Math.round(indica+(indica*25/100)));
+			vehicle.push(Math.round(indigoLogon));
+			nightFare.push(Math.round(indigoLogon+(indigoLogon*25/100)));
+			vehicle.push(Math.round(etios));
+			nightFare.push(Math.round(etios+(etios*25/100)));
+			vehicle.push(Math.round(tavera));
+			nightFare.push(Math.round(tavera+(tavera*25/100)));
+			vehicle.push(Math.round(innova));
+			nightFare.push(Math.round(innova+(innova*25/100)));
+			}
+			vehicleName.push('Omni Non-Ac');
+			vehicleName.push('Indica A/C');
+			vehicleName.push('Indigo A/C');
+			vehicleName.push('Etios A/C');
+			vehicleName.push('Tavera A/C');
+			vehicleName.push('Innova A/C');
+			
+			constructTaxiChart(vehicle,vehicleName,nightFare);
+
+}
+
+
+}
+function constructTaxiChart (vehicle,vehicleName,nightFare){
+var header = '';
+var result ='';
+header += '<h2>Taxi Fare Chart</h2>';
+result +='<center><table id="Result"class="CSSTableGenerator"><th>Vehicle</th><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
+for(var j=0;j<vehicle.length;j++){
+result +='<tr><td>'+vehicleName[j]+'</td><td>'+vehicle[j]+'</td><td>'+nightFare[j]+'</td></tr>';
+}
+result +='</table></center>';
+$('#Header').html(header);
+$('#contents').html(result);
+}
+function calcForHyd(){
+if(document.getElementById("radio-choice-1").checked){
+
+var dist =  calculateDistances();
+var farVal = new Array(); 
+var transName = new Array();
+		var dayCost ;
+			var nightCost;
+			if(dist<=1.6){
+			dayCost = 16;
+			nightCost = ((dayCost * 50)/100) + dayCost ;
+			nightCost=Math.round(nightCost);
+			}else if(dist>=100){
+			alert("Your Distance is too Far Please take Taxi");
+			}
+			else{
+			dist=(dist-1.6);
+			dist=Math.abs(dist);
+			//dist=Math.ceil(parseFloat(dist));
+			 dayCost = (dist * 9 ) + 16;
+			 nightCost = ((dayCost* 50)/100) + dayCost ;
+			 	dayCost=Math.round(dayCost);
+			 		nightCost=Math.round(nightCost);
+			}
+			farVal.push(dayCost);
+			farVal.push(nightCost);
+			transName.push('Auto Rickshaw');
+				
+//constructAutoFareChart(farVal,'Auto Rickshaw Fare Chart',transName);
+constructAutoFareChart(dayCost,nightCost);
+
+} else if(document.getElementById("radio-choice-2").checked){
+var dist = calculateDistances();
+			var dayCost ;
+			var nightCost;
+			var vehicle = new Array();
+			var nightFare = new Array();
+			var vehicleName = new Array();
+			if(dist<=2){
+			vehicle.push('40');
+			nightFare.push(Math.round(80+(80*10/100)));
+			}else {
+			dist = dist-2;
+			var omni = (dist * 21) + 40;
+			vehicle.push(Math.round(omni));
+			nightFare.push(Math.round(omni+(omni*25/100)));
+			}
+			vehicleName.push('4 Members Taxi');
+			
+			constructTaxiChart(vehicle,vehicleName,nightFare);
+}
+
+}
+
+function calcForBglre(){
+if(document.getElementById("radio-choice-1").checked){
+
+var dist =  calculateDistances();
+var farVal = new Array(); 
+var transName = new Array();
+		var dayCost ;
+			var nightCost;
+			if(dist<=1.9){
+			dayCost = 25;
+			nightCost = ((dayCost * 50)/100) + dayCost ;
+			nightCost=Math.round(nightCost);
+			}else if(dist>=100){
+			alert("Your Distance is too Far Please take Taxi");
+			}
+			else{
+			dist=(dist-1.9);
+			dist=Math.abs(dist);
+			//dist=Math.ceil(parseFloat(dist));
+			 dayCost = (dist * 13 ) + 25;
+			 nightCost = ((dayCost* 50)/100) + dayCost ;
+			 	dayCost=Math.round(dayCost);
+			 		nightCost=Math.round(nightCost);
+			}
+			farVal.push(dayCost);
+			farVal.push(nightCost);
+			transName.push('Auto Rickshaw');
+				
+//constructAutoFareChart(farVal,'Auto Rickshaw Fare Chart',transName);
+constructAutoFareChart(dayCost,nightCost);
+
+} else if(document.getElementById("radio-choice-2").checked){
+var dist = calculateDistances();
+			var dayCost ;
+			var nightCost;
+			var vehicle = new Array();
+			var nightFare = new Array();
+			var vehicleName = new Array();
+			if(dist<=4){
+			vehicle.push('80');
+			nightFare.push(Math.round(80+(80*10/100)));
+			}else {
+			dist = dist-4;
+			var omni = (dist * 19.50) + 80;
+			vehicle.push(Math.round(omni));
+			nightFare.push(Math.round(omni+(omni*10/100)));
+			}
+			vehicleName.push('4 Members Taxi');
+			
+			constructTaxiChart(vehicle,vehicleName,nightFare);
+
+}
+
+}
+
+function constructAutoFareChart(dayFare,nightFare){
+var index = 0;
+var resultVal = '';
+var header = '';
+header += '<h2>Auto Rickshaw Fare Chart </h2>';
+
+resultVal +='<center><table id="Result"class="CSSTableGenerator"><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
+resultVal +='<tr><td>'+dayFare+'</td><td>'+nightFare+'</td></tr>';
+resultVal +='</table></center>';
+
+$('#Header').html(header);
+$('#contents').html(resultVal);
+
+	
+}
+
+    </script>
+  </head>
+  <body onload="initialize()" >
+  <div data-role="header">
+  <h1>Auto Taxi Fare Calculator</h2>
+  </div>
+    <form action="#" onsubmit="calcDist(); return false;">  
+    <table align="center">
+    <tr>
+	<td>From </td><td><input id="geocomplete2" type="text" name="address1" placeholder="Type in an address" size="90" /></td>
+	</tr>
+	<tr>
+      <td>To </td> <td><input id="geocomplete1" type="text" name="address2" placeholder="Type in an address" size="90" /></td>
+     </tr>
+     <tr>
+     <td>
+      Choose Place </td><td>
+     <div class="ui-field-contain ui-hide-label">
+    <select name="select-native-3" id="select-native-3">
+        <option value="Chennai">Chennai</option>
+        <option value="Hyderabad">Hyderabad</option>
+         <option value="Banglore">Banglore</option>
+    </select>
+	</div>
+     </td>
+     </tr>
+     <tr>
+     <td>
+     Choose Transport Mode </td><td> 
+     <fieldset data-role="controlgroup">
+        <input type="radio" name="radio-choice" id="radio-choice-1" value="Auto Rickshaw" checked="checked">
+        <label for="radio-choice-1">Auto Rickshaw</label>
+        <input type="radio" name="radio-choice" id="radio-choice-2" value="Taxi">
+        <label for="radio-choice-2">Taxi</label>
+        
+</fieldset>
+     </td>
+     </tr>
+     </table>
+     <input type="submit" name="find" value="Get Fare"/>
+     </table>
+    </form>
+    
+   <p id="results"></p>
+    	<div id="resultFare">
+		<ul data-role="listview" data-inset="true"> <li data-role="list-divider"> <div id="Header"></div> </li> 
+		<div id ="contents"></div>
+		
+		</li></ul>
+		</div>
+		<div id="note">
+		
+		</div>
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <script src="jquery.geocomplete.js"></script>
+   
+    
+    <script>
+      $(function(){
+        
+        $("#geocomplete2").geocomplete()
+          .bind("geocode:result", function(event, result){
+            $.log("Result: " + result.formatted_address);
+          })
+          .bind("geocode:error", function(event, status){
+            $.log("ERROR: " + status);
+          })
+          .bind("geocode:multiple", function(event, results){
+            $.log("Multiple: " + results.length + " results found");
+          });
+          
+          $("#geocomplete1").geocomplete()
+          .bind("geocode:result", function(event, result){
+            $.log("Result: " + result.formatted_address);
+          })
+          .bind("geocode:error", function(event, status){
+            $.log("ERROR: " + status);
+          })
+          .bind("geocode:multiple", function(event, results){
+            $.log("Multiple: " + results.length + " results found");
+          });
+        
+        $("#find").click(function(){
+          $("#geocomplete").trigger("geocode");
+        });
+        
+        
+        $("#examples a").click(function(){
+          $("#geocomplete").val($(this).text()).trigger("geocode");
+          return false;
+        });
+        
+      });
+    </script>
+  </body>
+</html>
+
