@@ -10,7 +10,7 @@
 	<script src="jquery.mobile-1.4.0.min.js"></script>
      <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAA7j_Q-rshuWkc8HyFI4V2HxQYPm-xtd00hTQOC0OXpAMO40FHAxT29dNBGfxqMPq5zwdeiDSHEPL89A" type="text/javascript"></script>
      <script type="text/javascript">
-     
+     var distVal ;
      $( document ).on( "pagecreate", function() {
 			$( "#theme-selector input" ).on( "change", function( event ) {
 				var themeClass = $( "#theme-selector input:checked" ).attr( "id" );
@@ -50,16 +50,6 @@
 	 
   origin = document.forms[0].address1.value; //Get the source string
   destination = document.forms[0].address2.value; //Get the destination string
-  if(origin==null || origin==''){
-  alert("Please Enter From Address");
-  return true;
-  }else if(destination==null || destination==''){
-   alert("Please Enter To Address");
-   return true;
-  }else if(origin==destination){
-  alert("From and To Cannot be Same");
-  return true;
-  }
   var service = new google.maps.DistanceMatrixService(); //initialize the distance service
   service.getDistanceMatrix(
     {
@@ -88,7 +78,6 @@ function calcDistance(response, status) {
        //alert ('Distance from '+origins[i] + ' to ' + destinations[j]
          //   + ': ' + results[j].distance.text ); // alert the result
 			var dist= results[j].distance.text ;
-
 			dist = dist.replace('km','');
 			/*var totalDayFare ;
 			var totalnightFare;
@@ -96,31 +85,17 @@ function calcDistance(response, status) {
 			alert("hai");
 			
 			}*/
-
-return parseFloat(dist.trim());
-
-			if(parseFloat(dist.trim())<=1.8){
-			dayCost = 25;
-			nightCost = ((parseFloat(dayCost) * 50)/100) + dayCost ;
-			nightCost=Math.round(nightCost);
-			}else if(parseFloat(dist.trim())>=100){
-			alert("Your Distance is too Far Please take Taxi");
-			}
-			else{
-			dist=(parseFloat(dist.trim())-1.8);
-			dist=Math.abs(dist);
-			//dist=Math.ceil(parseFloat(dist));
-			 dayCost = ( parseFloat(dist) * 12 ) + 25;
-			 nightCost = ((parseFloat(dayCost) * 50)/100) + dayCost ;
-			 	dayCost=Math.round(dayCost);
-			 		nightCost=Math.round(nightCost);
-			}
-			result +='<div><center><table id="Result"><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
-			result += '<tr><td>'+ dayCost + '</td>' + '<td>' + nightCost + '</td></tr>';
-			result+='</table></center></div>';
-			
-			
-			$('#resultFare').html(result);
+			var chosenPlace = document.getElementById("select-native-3");
+distVal = parseFloat(dist.trim());
+dist = parseFloat(dist.trim());
+if(chosenPlace.value=='Chennai'){
+calcForChen(dist);
+}else if (chosenPlace.value=='Hyderabad'){
+calcForHyd(dist);
+}
+else if(chosenPlace.value=='Banglore'){
+calcForBglre(dist);
+}
       }
     }
   }
@@ -135,29 +110,48 @@ return parseFloat(dist.trim());
 
    
    function getDist(){
-   var dist = 9;
-   return dist;
+   calculateDistances();
+   var dist = document.getElementById("distance").value;
+   alert(dist);
+   return parseFloat(dist);
+   }
+   function checkFields(){
+   var fromPlace = document.forms[0].address1.value;
+   var toPlace = document.forms[0].address2.value; ;
+    if(fromPlace==null || fromPlace==''){
+  alert("Please Enter From Address");
+  return true;
+  }else if(toPlace==null || toPlace==''){
+   alert("Please Enter To Address");
+   return true;
+  }else if(fromPlace==toPlace){
+  alert("From and To Cannot be Same");
+ document.forms[0].address1.value='';
+document.forms[0].address2.value ='';
+  return true;
+  }
    }
 
 function calcDist(){
 var chosenPlace = document.getElementById("select-native-3");
-if(!calculateDistances()){
+if(checkFields()){
 return;
 }
-if(chosenPlace.value=='Chennai'){
-calcForChen();
-}else if (chosenPlace.value=='Hyderabad'){
-calcForHyd();
+calculateDistances();
+//if(chosenPlace.value=='Chennai'){
+//calcForChen();
+//}else if (chosenPlace.value=='Hyderabad'){
+//calcForHyd();
+//}
+//else if(chosenPlace.value=='Banglore'){
+//calcForBglre();
+//}
 }
-else if(chosenPlace.value=='Banglore'){
-calcForBglre();
-}
-}
-function calcForChen(){
+function calcForChen(dist){
 
 if(document.getElementById("radio-choice-1").checked){
 
-var dist =  calculateDistances();
+//var dist =  getDist();
 var farVal = new Array(); 
 var transName = new Array();
 		var dayCost ;
@@ -186,7 +180,7 @@ var transName = new Array();
 constructAutoFareChart(dayCost,nightCost);
 
 } else if(document.getElementById("radio-choice-2").checked){
-			var dist = calculateDistances();
+		//	var dist = calculateDistances();
 			var dayCost ;
 			var nightCost;
 			var vehicle = new Array();
@@ -243,18 +237,18 @@ function constructTaxiChart (vehicle,vehicleName,nightFare){
 var header = '';
 var result ='';
 header += '<h2>Taxi Fare Chart</h2>';
-result +='<center><table id="Result"class="CSSTableGenerator"><th>Vehicle</th><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
+result +='<table data-role="table" id="table-custom-2" data-mode="columntoggle" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-theme="b" ><th>Vehicle</th><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
 for(var j=0;j<vehicle.length;j++){
 result +='<tr><td>'+vehicleName[j]+'</td><td>'+vehicle[j]+'</td><td>'+nightFare[j]+'</td></tr>';
 }
-result +='</table></center>';
+result +='</table>';
 $('#Header').html(header);
 $('#contents').html(result);
 }
-function calcForHyd(){
+function calcForHyd(dist){
 if(document.getElementById("radio-choice-1").checked){
 
-var dist =  calculateDistances();
+//var dist =  calculateDistances();
 var farVal = new Array(); 
 var transName = new Array();
 		var dayCost ;
@@ -283,7 +277,7 @@ var transName = new Array();
 constructAutoFareChart(dayCost,nightCost);
 
 } else if(document.getElementById("radio-choice-2").checked){
-var dist = calculateDistances();
+//var dist = calculateDistances();
 			var dayCost ;
 			var nightCost;
 			var vehicle = new Array();
@@ -305,10 +299,12 @@ var dist = calculateDistances();
 
 }
 
-function calcForBglre(){
+function calcForBglre(dist){
+
+//var dist =  calculateDistances();
+
 if(document.getElementById("radio-choice-1").checked){
 
-var dist =  calculateDistances();
 var farVal = new Array(); 
 var transName = new Array();
 		var dayCost ;
@@ -337,7 +333,7 @@ var transName = new Array();
 constructAutoFareChart(dayCost,nightCost);
 
 } else if(document.getElementById("radio-choice-2").checked){
-var dist = calculateDistances();
+//var dist = calculateDistances();
 			var dayCost ;
 			var nightCost;
 			var vehicle = new Array();
@@ -385,14 +381,14 @@ $('#contents').html(resultVal);
     <form action="#" onsubmit="calcDist(); return false;">  
     <table align="center">
     <tr>
-	<td>From </td><td><input id="geocomplete2" type="text" name="address1" placeholder="Type in an address" size="90" /></td>
+	<td><b>From</b> </td><td><input id="geocomplete2" type="text" name="address1" placeholder="Type in an address" size="90" /></td>
 	</tr>
 	<tr>
-      <td>To </td> <td><input id="geocomplete1" type="text" name="address2" placeholder="Type in an address" size="90" /></td>
+      <td><b>To</b> </td> <td><input id="geocomplete1" type="text" name="address2" placeholder="Type in an address" size="90" /></td>
      </tr>
      <tr>
      <td>
-      Choose Place </td><td>
+      <b>Place</b> </td><td>
      <div class="ui-field-contain ui-hide-label">
     <select name="select-native-3" id="select-native-3">
         <option value="Chennai">Chennai</option>
@@ -404,7 +400,7 @@ $('#contents').html(resultVal);
      </tr>
      <tr>
      <td>
-     Choose Transport Mode </td><td> 
+     <b>Transport</b></td><td> 
      <fieldset data-role="controlgroup">
         <input type="radio" name="radio-choice" id="radio-choice-1" value="Auto Rickshaw" checked="checked">
         <label for="radio-choice-1">Auto Rickshaw</label>
@@ -414,9 +410,12 @@ $('#contents').html(resultVal);
 </fieldset>
      </td>
      </tr>
+     <tr>
+     <td>    </td> 
+     <td> <input type="submit" name="find" value="Get Fare"/> <button class="hide-page-loading-msg" data-inline="true" data-icon="delete">Close</button> </td>
+     </tr>
      </table>
-     <input type="submit" name="find" value="Get Fare"/>
-     </table>
+     <input type="hidden" id="distance"/>
     </form>
     
    <p id="results"></p>
