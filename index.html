@@ -4,9 +4,12 @@
     <title>Distance between Two Places</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="styles.css" />
-    <link rel="stylesheet" href="jquery.mobile-1.4.0.min.css">
 	<link rel="shortcut icon" href="../favicon.ico">
 	<script src="jquery.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/jquery.mobile.flatui.css" />
+	<script type="text/javascript" charset="utf-8" src="phonegap.js"></script>
+  <script src="js/jquery.js"></script>
+  <script src="js/jquery.mobile-1.4.0-rc.1.js"></script>
 	<script src="jquery.mobile-1.4.0.min.js"></script>
      <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAA7j_Q-rshuWkc8HyFI4V2HxQYPm-xtd00hTQOC0OXpAMO40FHAxT29dNBGfxqMPq5zwdeiDSHEPL89A" type="text/javascript"></script>
      <script type="text/javascript">
@@ -106,6 +109,8 @@ calcForBglre(dist);
 
     function initialize() {
         geocoder = new GClientGeocoder();
+         document.addEventListener("deviceready", onDeviceReady, true);
+         document.getElementById("resultFare").style.display ="none";
     }
 
    
@@ -116,6 +121,7 @@ calcForBglre(dist);
    return parseFloat(dist);
    }
    function checkFields(){
+   var chosenPlace = document.getElementById("select-native-3");
    var fromPlace = document.forms[0].address1.value;
    var toPlace = document.forms[0].address2.value; ;
     if(fromPlace==null || fromPlace==''){
@@ -128,6 +134,12 @@ calcForBglre(dist);
   alert("From and To Cannot be Same");
  document.forms[0].address1.value='';
 document.forms[0].address2.value ='';
+  return true;
+  }else if(fromPlace.indexOf(chosenPlace.value)==-1 || toPlace.indexOf(chosenPlace.value)==-1){
+  alert("Please provide Address from "+chosenPlace.value);
+  return true;
+  }else if(!navigator.onLine){
+  alert("Not able to connect to the server ! Make sure that your internet is ON");
   return true;
   }
    }
@@ -237,7 +249,7 @@ function constructTaxiChart (vehicle,vehicleName,nightFare){
 var header = '';
 var result ='';
 header += '<h2>Taxi Fare Chart</h2>';
-result +='<table data-role="table" id="table-custom-2" data-mode="columntoggle" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-theme="b" ><th>Vehicle</th><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
+result +='<table id="Result"class="CSSTableGenerator"><th>Vehicle</th><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
 for(var j=0;j<vehicle.length;j++){
 result +='<tr><td>'+vehicleName[j]+'</td><td>'+vehicle[j]+'</td><td>'+nightFare[j]+'</td></tr>';
 }
@@ -368,15 +380,21 @@ resultVal +='</table></center>';
 
 $('#Header').html(header);
 $('#contents').html(resultVal);
-
-	
+$( "#leftpanel1" ).trigger( "updatelayout" );
+alert("call");
+$( "#leftpanel1" ).panel( "close" );
+ 
+}
+function closeApp(){
+navigator.app.exitApp();
 }
 
     </script>
   </head>
   <body onload="initialize()" >
-  <div data-role="header">
-  <h1>Auto Taxi Fare Calculator</h2>
+  <div data-role="header" data-theme="a">
+  <h1>Auto Taxi Fare Calc</h1>
+   <a href="#popupDialog" data-rel="popup" data-role="button" data-position-to="window" data-transition="pop" data-icon="flat-cross" data-iconpos="notext" data-theme="a" data-inline="true" class="ui-btn-right">Cross</a>
   </div>
     <form action="#" onsubmit="calcDist(); return false;">  
     <table align="center">
@@ -389,11 +407,11 @@ $('#contents').html(resultVal);
      <tr>
      <td>
       <b>Place</b> </td><td>
-     <div class="ui-field-contain ui-hide-label">
-    <select name="select-native-3" id="select-native-3">
+     <div class="ui-field-contain" >
+    <select name="select-native-3" id="select-native-3" data-native-menu="false">
         <option value="Chennai">Chennai</option>
         <option value="Hyderabad">Hyderabad</option>
-         <option value="Banglore">Banglore</option>
+         <option value="Bangalore">Bangalore</option>
     </select>
 	</div>
      </td>
@@ -401,7 +419,7 @@ $('#contents').html(resultVal);
      <tr>
      <td>
      <b>Transport</b></td><td> 
-     <fieldset data-role="controlgroup">
+     <fieldset data-role="controlgroup" data-theme="a">
         <input type="radio" name="radio-choice" id="radio-choice-1" value="Auto Rickshaw" checked="checked">
         <label for="radio-choice-1">Auto Rickshaw</label>
         <input type="radio" name="radio-choice" id="radio-choice-2" value="Taxi">
@@ -412,7 +430,8 @@ $('#contents').html(resultVal);
      </tr>
      <tr>
      <td>    </td> 
-     <td> <input type="submit" name="find" value="Get Fare"/> <button class="hide-page-loading-msg" data-inline="true" data-icon="delete">Close</button> </td>
+     <td> <input type="submit" name="find"  data-icon="flat-checkround" value="Get Fare"/> </td>
+     <td> <a href='#' id="hai" onClick="calcDist()" data-icon="flat-checkround" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-btn-mini">Get Fare !</a> </td>
      </tr>
      </table>
      <input type="hidden" id="distance"/>
@@ -420,14 +439,25 @@ $('#contents').html(resultVal);
     
    <p id="results"></p>
     	<div id="resultFare">
-		<ul data-role="listview" data-inset="true"> <li data-role="list-divider"> <div id="Header"></div> </li> 
+		<div data-role="panel" id="leftpanel1" data-position="right" data-display="overlay" data-theme="a"> <div id="Header"></div> </li> 
 		<div id ="contents"></div>
 		
-		</li></ul>
+		</div>
 		</div>
 		<div id="note">
 		
 		</div>
+		<div data-role="popup" id="popupDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+    <div data-role="header" data-theme="a">
+    <h1>Exit Page?</h1>
+    </div>
+    <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Exit?</h3>
+    <a href='javascript:closeApp()' class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Exit</a>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
+        
+    </div>
+</div>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
