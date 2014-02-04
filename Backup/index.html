@@ -96,7 +96,7 @@ calcForChen(dist);
 }else if (chosenPlace.value=='Hyderabad'){
 calcForHyd(dist);
 }
-else if(chosenPlace.value=='Bangalore'){
+else if(chosenPlace.value=='Banglore'){
 calcForBglre(dist);
 }
       }
@@ -110,7 +110,6 @@ calcForBglre(dist);
     function initialize() {
         geocoder = new GClientGeocoder();
          document.addEventListener("deviceready", onDeviceReady, true);
-         document.getElementById("resultFare").style.display ="none";
     }
 
    
@@ -126,7 +125,6 @@ calcForBglre(dist);
    var toPlace = document.forms[0].address2.value; ;
     if(fromPlace==null || fromPlace==''){
   alert("Please Enter From Address");
- 
   return true;
   }else if(toPlace==null || toPlace==''){
    alert("Please Enter To Address");
@@ -140,7 +138,7 @@ document.forms[0].address2.value ='';
   alert("Please provide Address from "+chosenPlace.value);
   return true;
   }else if(!navigator.onLine){
-  alert("Not able to connect to the server ! Make sure that your internet is ON");
+  alert("Not able to connect to the server ! Make sure that your internet is on");
   return true;
   }
    }
@@ -257,10 +255,6 @@ result +='<tr><td>'+vehicleName[j]+'</td><td>'+vehicle[j]+'</td><td>'+nightFare[
 result +='</table>';
 $('#Header').html(header);
 $('#contents').html(result);
-$('[data-role=panel]').trigger('pagecreate');
-
-   $('#resultPanel').panel('open');
- 
 }
 function calcForHyd(dist){
 if(document.getElementById("radio-choice-1").checked){
@@ -382,12 +376,11 @@ header += '<h2>Auto Rickshaw Fare Chart </h2>';
 resultVal +='<center><table id="Result"class="CSSTableGenerator"><th>Day Fare(in Rupees)</th><th>Night Fare(in Rupees)</th>';
 resultVal +='<tr><td>'+dayFare+'</td><td>'+nightFare+'</td></tr>';
 resultVal +='</table></center>';
+
 $('#Header').html(header);
 $('#contents').html(resultVal);
 
-$('[data-role=panel]').trigger('pagecreate');
- //  $('#resultPanel').panel('open');
-      //$("#mypanel").panel("open");
+	
 }
 function closeApp(){
 navigator.app.exitApp();
@@ -398,9 +391,9 @@ navigator.app.exitApp();
   <body onload="initialize()" >
   <div data-role="header" data-theme="a">
   <h1>Auto Taxi Fare Calc</h1>
-   <a href="#popupDialog" data-rel="popup" data-role="button" data-position-to="window" data-transition="pop" data-icon="flat-cross" data-iconpos="notext" data-theme="a" data-inline="true" class="ui-btn-right">Cross</a>
+   <a href='javascript:closeApp()' data-rel="dialog" data-role="button" data-icon="flat-cross" data-iconpos="notext" data-theme="a" data-inline="true" class="ui-btn-right">Cross</a>
   </div>
-    <form action="#">  
+    <form action="#" onsubmit="calcDist(); return false;">  
     <table align="center">
     <tr>
 	<td><b>From</b> </td><td><input id="geocomplete2" type="text" name="address1" placeholder="Type in an address" size="90" /></td>
@@ -412,7 +405,7 @@ navigator.app.exitApp();
      <td>
       <b>Place</b> </td><td>
      <div class="ui-field-contain" >
-    <select name="select-native-3" id="select-native-3" data-native-menu="true">
+    <select name="select-native-3" id="select-native-3" data-native-menu="false">
         <option value="Chennai">Chennai</option>
         <option value="Hyderabad">Hyderabad</option>
          <option value="Bangalore">Bangalore</option>
@@ -434,39 +427,23 @@ navigator.app.exitApp();
      </tr>
      <tr>
      <td>    </td> 
-    <!-- <td> <input type="submit" name="find"  data-icon="flat-checkround" value="Get Fare"/> </td> -->
-    <td> <center><a href='#resultPanel' onClick="calcDist()" data-icon="flat-checkround" class="ui-btn ui-shadow ui-corner-all ui-btn-inline ui-btn-mini">Get Fare </a></center> </td>
+     <td> <input type="submit" name="find" data-icon="flat-checkround" value="Get Fare"/> </td>
      </tr>
      </table>
      <input type="hidden" id="distance"/>
-     <div data-role="panel" id="resultPanel" data-position-fixed="true" data-position="left" data-display="overlay" data-theme="d"> <div id="Header"></div> 
-		<div id ="contents"></div>
-		<div id="note">
-		<p>*Rates are Estimated based on Distance ! Rates may vary from high or less 10 percent</p>
-		<center><h4>Happy Journey!</h4></center>
-		 <a href="#" data-rel="close" data-role="button" data-theme="a" data-icon="delete" data-inline="true">Close panel</a>
-		</div>
-	
-		</div>
-		
-		<div data-role="panel" id="mypanel" data-position-fixed="true" data-position="left" data-display="overlay" data-theme="d">
-This is Panel! 
-</div>
-		
     </form>
     
+   <p id="results"></p>
+    	<div id="resultFare">
+		<ul data-role="listview" data-inset="true"> <li data-role="list-divider"> <div id="Header"></div> </li> 
+		<div id ="contents"></div>
 		
-		<div data-role="popup" id="popupDialog" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
-    <div data-role="header" data-theme="a">
-    <h1>Exit Page?</h1>
-    </div>
-    <div role="main" class="ui-content">
-        <h3 class="ui-title">Are you sure you want to Exit?</h3>
-    <a href='#' onClick="closeApp()" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Exit</a>
-        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">Cancel</a>
-        
-    </div>
-</div>
+		</li></ul>
+		</div>
+		<div id="note">
+		
+		</div>
+		
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false&amp;libraries=places"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
@@ -510,7 +487,6 @@ This is Panel!
         
       });
     </script>
-    
   </body>
 </html>
 
